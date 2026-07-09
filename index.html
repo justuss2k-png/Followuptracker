@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Follow-up Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1614;
+    --bg-elevated: #232019;
+    --card: #2a2622;
+    --card-border: #3a352e;
+    --orange: #ff6b35;
+    --red: #e63946;
+    --gradient: linear-gradient(135deg, #ff6b35, #e63946);
+    --text: #f2ede6;
+    --text-dim: #a89f92;
+    --text-faint: #6e6558;
+    --green: #4caf82;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(255,107,53,0.08), transparent 40%),
+      radial-gradient(circle at 85% 100%, rgba(230,57,70,0.06), transparent 40%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  h1 {
+    font-family: 'Anton', sans-serif;
+    font-weight: 400;
+    letter-spacing: 1px;
+    font-size: clamp(32px, 6vw, 48px);
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-transform: uppercase;
+    line-height: 1.05;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  /* Summary */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .summary-box {
+    background: var(--bg-elevated);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 18px 10px;
+    text-align: center;
+  }
+
+  .summary-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-faint);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .summary-value {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(28px, 6vw, 40px);
+    color: var(--text);
+  }
+
+  .summary-box.sent .summary-value { color: var(--text); }
+  .summary-box.reply .summary-value { color: var(--orange); }
+  .summary-box.convo .summary-value { color: var(--green); }
+
+  /* Cards */
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--gradient);
+  }
+
+  .card-title {
+    font-family: 'Anton', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--gradient);
+    color: #fff;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .card-text {
+    background: var(--bg-elevated);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  .counters {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .counter {
+    background: var(--bg-elevated);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .counter-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-faint);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .counter-value {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .counter-btns {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease, background 0.15s ease;
+    user-select: none;
+  }
+
+  .btn:hover { background: var(--card-border); }
+  .btn:active { transform: scale(0.9); }
+
+  .btn.plus {
+    background: var(--gradient);
+    border: none;
+    color: #fff;
+  }
+  .btn.plus:hover { filter: brightness(1.1); }
+
+  .ratios {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .ratio {
+    background: rgba(255,107,53,0.08);
+    border: 1px solid rgba(255,107,53,0.2);
+    border-radius: 10px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .ratio-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-faint);
+    margin-bottom: 3px;
+  }
+
+  .ratio-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--orange);
+  }
+
+  /* Backup */
+  .backup-section {
+    margin-top: 28px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+
+  .backup-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 6px;
+  }
+
+  .backup-desc {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  .backup-btns {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .backup-btn {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    letter-spacing: 0.3px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .backup-btn:hover { background: var(--card-border); }
+
+  .backup-btn.small {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .backup-btn.ghost {
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--text-dim);
+  }
+
+  .backup-textarea {
+    width: 100%;
+    margin-top: 12px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+  }
+
+  .backup-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* Reset */
+  .reset-row {
+    margin-top: 32px;
+    text-align: center;
+  }
+
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .reset-btn:hover {
+    background: var(--red);
+    color: #fff;
+  }
+
+  .status {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 12px;
+    margin-top: 10px;
+    height: 16px;
+  }
+
+  .loading-screen {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 60px 0;
+    font-size: 14px;
+  }
+
+  .error-banner {
+    background: rgba(230,57,70,0.12);
+    border: 1px solid rgba(230,57,70,0.35);
+    color: #ff9aa4;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .error-banner.show { display: block; }
+
+  @media (max-width: 480px) {
+    .counter-value { font-size: 20px; }
+    .card-title { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Follow-up Tracker</h1>
+    <div class="subtitle">Voor DM's die op je opener werden genegeerd</div>
+  </header>
+
+  <div class="error-banner" id="error-banner"></div>
+
+  <div class="summary" id="summary">
+    <div class="summary-box sent">
+      <div class="summary-label">Verstuurd</div>
+      <div class="summary-value" id="total-sent">0</div>
+    </div>
+    <div class="summary-box reply">
+      <div class="summary-label">Reactie</div>
+      <div class="summary-value" id="total-reply">0</div>
+    </div>
+    <div class="summary-box convo">
+      <div class="summary-label">Gesprek</div>
+      <div class="summary-value" id="total-convo">0</div>
+    </div>
+  </div>
+
+  <div id="loading" class="loading-screen">Gegevens laden...</div>
+  <div class="cards" id="cards" style="display:none;"></div>
+
+  <div class="backup-section">
+    <div class="backup-title">Back-up (aanbevolen)</div>
+    <div class="backup-desc">Automatisch opslaan werkt op dit moment niet altijd betrouwbaar. Exporteer je stand af en toe naar een tekstcode en bewaar die ergens veilig (bijv. in Notities), zodat je 'm terug kunt zetten als er iets misgaat.</div>
+    <div class="backup-btns">
+      <button class="backup-btn" id="export-btn">Exporteer data</button>
+      <button class="backup-btn" id="import-btn">Importeer data</button>
+    </div>
+    <textarea class="backup-textarea" id="backup-textarea" style="display:none;" rows="4" placeholder="Plak hier je eerder geëxporteerde code..."></textarea>
+    <div class="backup-actions" id="backup-actions" style="display:none;">
+      <button class="backup-btn small" id="copy-btn">Kopieer</button>
+      <button class="backup-btn small" id="load-btn" style="display:none;">Laden</button>
+      <button class="backup-btn small ghost" id="close-backup-btn">Sluiten</button>
+    </div>
+  </div>
+
+  <div class="reset-row">
+    <button class="reset-btn" id="reset-btn">Alles resetten</button>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<script>
+const TEMPLATES = [
+  {
+    id: 1,
+    title: "De nieuwsgierige knipoog",
+    text: "Hey! Ben benieuwd 👆🏼😃"
+  },
+  {
+    id: 2,
+    title: "De ultra-korte heropening",
+    text: "yo haha"
+  },
+  {
+    id: 3,
+    title: "De inbox-check",
+    text: "was even benieuwd of mijn eerste bericht in de juiste inbox terecht is gekomen. Let me know!"
+  },
+  {
+    id: 4,
+    title: "De speelse check-in",
+    text: "Haha zie ik hier nog iemand? 👀"
+  },
+  {
+    id: 5,
+    title: "De relaxte reminder",
+    text: "Yo, geen druk hoor als je 'm gemist hebt 😄 was gewoon benieuwd"
+  }
+];
+
+let state = {};
+TEMPLATES.forEach(t => {
+  state[t.id] = { sent: 0, reply: 0, convo: 0 };
+});
+
+// Storage strategie, 1-op-1 gebaseerd op de opener tracker die wel werkt:
+// 1) probeer de platform-opslag (window.storage)
+// 2) lukt dat niet, val terug op de browser's eigen localStorage
+// 3) lukt ook dat niet, blijf alles in het geheugen bijhouden (niet
+//    bewaard na herladen, maar de app blijft wel werken)
+const STORAGE_KEY = 'followup-tracker:templates';
+let storageMode = 'unknown'; // 'platform' | 'local' | 'memory'
+let saveTimeout = null;
+
+function setStatus(msg, clearAfter = 1500) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  if (clearAfter) {
+    setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, clearAfter);
+  }
+}
+
+function setError(msg) {
+  const el = document.getElementById('error-banner');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function clearError() {
+  const el = document.getElementById('error-banner');
+  if (el) el.classList.remove('show');
+}
+
+function showSaveIndicator() {
+  setStatus('opgeslagen', 900);
+}
+
+function waitForStorage(maxWaitMs) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    (function check() {
+      if (window.storage && typeof window.storage.get === 'function') {
+        resolve(true);
+      } else if (Date.now() - start > maxWaitMs) {
+        resolve(false);
+      } else {
+        setTimeout(check, 100);
+      }
+    })();
+  });
+}
+
+function applyLoadedData(parsed) {
+  TEMPLATES.forEach(t => {
+    const incoming = parsed && (parsed[t.id] || parsed[String(t.id)]);
+    if (incoming) {
+      state[t.id] = {
+        sent: Number(incoming.sent) || 0,
+        reply: Number(incoming.reply) || 0,
+        convo: Number(incoming.convo) || 0
+      };
+    }
+  });
+}
+
+async function loadState() {
+  const hasPlatform = await waitForStorage(2500);
+
+  if (hasPlatform) {
+    try {
+      const res = await window.storage.get(STORAGE_KEY, false);
+      if (res && res.value) applyLoadedData(JSON.parse(res.value));
+      storageMode = 'platform';
+      return;
+    } catch (e) {
+      // "not found" is normaal bij de allereerste keer laden.
+      if (e && e.message && e.message.toLowerCase().includes('not found')) {
+        storageMode = 'platform';
+        return;
+      }
+      // Andere fout: val door naar localStorage.
+    }
+  }
+
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) applyLoadedData(JSON.parse(raw));
+    storageMode = 'local';
+  } catch (e) {
+    storageMode = 'memory';
+  }
+}
+
+async function saveState() {
+  const payload = JSON.stringify(state);
+
+  if (storageMode === 'platform') {
+    try {
+      await window.storage.set(STORAGE_KEY, payload, false);
+      clearError();
+      showSaveIndicator();
+      return;
+    } catch (e) {
+      console.error('Platform-opslag mislukt, val terug op localStorage:', e);
+      storageMode = 'local';
+    }
+  }
+
+  if (storageMode === 'local') {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, payload);
+      clearError();
+      showSaveIndicator();
+      return;
+    } catch (e) {
+      storageMode = 'memory';
+    }
+  }
+
+  setError('Wordt niet bewaard na herladen — alleen deze sessie.');
+}
+
+function queueSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveState, 300);
+}
+
+function pct(n, d) {
+  if (!d || d <= 0) return 0;
+  return Math.round((n / d) * 100);
+}
+
+function renderSummary() {
+  let sent = 0, reply = 0, convo = 0;
+  TEMPLATES.forEach(t => {
+    sent += state[t.id].sent;
+    reply += state[t.id].reply;
+    convo += state[t.id].convo;
+  });
+  document.getElementById('total-sent').textContent = sent;
+  document.getElementById('total-reply').textContent = reply;
+  document.getElementById('total-convo').textContent = convo;
+}
+
+function updateCardDisplay(id) {
+  const s = state[id];
+  const card = document.getElementById(`card-${id}`);
+  card.querySelector('.val-sent').textContent = s.sent;
+  card.querySelector('.val-reply').textContent = s.reply;
+  card.querySelector('.val-convo').textContent = s.convo;
+  card.querySelector('.ratio-reply').textContent = pct(s.reply, s.sent) + '%';
+  card.querySelector('.ratio-convo').textContent = pct(s.convo, s.reply) + '%';
+}
+
+function changeCounter(id, field, delta) {
+  const s = state[id];
+  const newVal = Math.max(0, s[field] + delta);
+  s[field] = newVal;
+
+  // keep logical consistency: reply/convo can't exceed sent/reply
+  if (field === 'sent' && s.sent < s.reply) s.reply = s.sent;
+  if (s.reply < s.convo) s.convo = s.reply;
+
+  updateCardDisplay(id);
+  renderSummary();
+  queueSave();
+}
+
+function renderCards() {
+  const container = document.getElementById('cards');
+  container.innerHTML = TEMPLATES.map(t => `
+    <div class="card" id="card-${t.id}">
+      <div class="card-title"><span class="card-num">${t.id}</span>${t.title}</div>
+      <div class="card-text">"${t.text}"</div>
+      <div class="counters">
+        <div class="counter">
+          <div class="counter-label">Verstuurd</div>
+          <div class="counter-value val-sent">0</div>
+          <div class="counter-btns">
+            <button class="btn minus" data-id="${t.id}" data-field="sent" data-delta="-1">−</button>
+            <button class="btn plus" data-id="${t.id}" data-field="sent" data-delta="1">+</button>
+          </div>
+        </div>
+        <div class="counter">
+          <div class="counter-label">Reactie</div>
+          <div class="counter-value val-reply">0</div>
+          <div class="counter-btns">
+            <button class="btn minus" data-id="${t.id}" data-field="reply" data-delta="-1">−</button>
+            <button class="btn plus" data-id="${t.id}" data-field="reply" data-delta="1">+</button>
+          </div>
+        </div>
+        <div class="counter">
+          <div class="counter-label">Gesprek</div>
+          <div class="counter-value val-convo">0</div>
+          <div class="counter-btns">
+            <button class="btn minus" data-id="${t.id}" data-field="convo" data-delta="-1">−</button>
+            <button class="btn plus" data-id="${t.id}" data-field="convo" data-delta="1">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="ratios">
+        <div class="ratio">
+          <div class="ratio-label">Reactie-%</div>
+          <div class="ratio-value ratio-reply">0%</div>
+        </div>
+        <div class="ratio">
+          <div class="ratio-label">Gesprek-%</div>
+          <div class="ratio-value ratio-convo">0%</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn');
+    if (!btn) return;
+    const id = parseInt(btn.dataset.id, 10);
+    const field = btn.dataset.field;
+    const delta = parseInt(btn.dataset.delta, 10);
+    changeCounter(id, field, delta);
+  });
+
+  TEMPLATES.forEach(t => updateCardDisplay(t.id));
+}
+
+async function resetAll() {
+  const btn = document.getElementById('reset-btn');
+  btn.disabled = true;
+  btn.textContent = 'Bezig met resetten...';
+  try {
+    TEMPLATES.forEach(t => {
+      state[t.id] = { sent: 0, reply: 0, convo: 0 };
+      updateCardDisplay(t.id);
+    });
+    renderSummary();
+    await saveState();
+    setStatus('Alles gereset ✓', 2000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Alles resetten';
+  }
+}
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (confirm('Weet je zeker dat je alle tellers wilt resetten? Dit kan niet ongedaan worden gemaakt.')) {
+    resetAll();
+  }
+});
+
+// --- Handmatige back-up: export/import als tekstcode ---
+// Dit is een betrouwbaar alternatief zolang de automatische opslag
+// in deze omgeving niet altijd werkt.
+
+const backupTextarea = document.getElementById('backup-textarea');
+const backupActions = document.getElementById('backup-actions');
+const copyBtn = document.getElementById('copy-btn');
+const loadBtn = document.getElementById('load-btn');
+const closeBackupBtn = document.getElementById('close-backup-btn');
+
+function closeBackupPanel() {
+  backupTextarea.style.display = 'none';
+  backupActions.style.display = 'none';
+  backupTextarea.value = '';
+  backupTextarea.readOnly = false;
+  loadBtn.style.display = 'none';
+  copyBtn.style.display = 'none';
+}
+
+document.getElementById('export-btn').addEventListener('click', () => {
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+  backupTextarea.value = code;
+  backupTextarea.readOnly = true;
+  backupTextarea.style.display = 'block';
+  backupActions.style.display = 'flex';
+  copyBtn.style.display = 'inline-block';
+  loadBtn.style.display = 'none';
+  backupTextarea.focus();
+  backupTextarea.select();
+  setStatus("Code gemaakt — kopieer en bewaar 'm ergens veilig.", 3000);
+});
+
+document.getElementById('import-btn').addEventListener('click', () => {
+  backupTextarea.value = '';
+  backupTextarea.readOnly = false;
+  backupTextarea.style.display = 'block';
+  backupActions.style.display = 'flex';
+  copyBtn.style.display = 'none';
+  loadBtn.style.display = 'inline-block';
+  backupTextarea.placeholder = 'Plak hier je eerder geëxporteerde code...';
+  backupTextarea.focus();
+});
+
+copyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(backupTextarea.value);
+    setStatus('Gekopieerd naar klembord ✓', 2000);
+  } catch (e) {
+    backupTextarea.select();
+    setStatus("Kon niet automatisch kopiëren — tekst is geselecteerd, kopieer 'm handmatig.", 3500);
+  }
+});
+
+loadBtn.addEventListener('click', async () => {
+  const raw = backupTextarea.value.trim();
+  if (!raw) {
+    setStatus('Plak eerst een code in het vak.', 2500);
+    return;
+  }
+  try {
+    const decoded = JSON.parse(decodeURIComponent(escape(atob(raw))));
+    let changedAny = false;
+    TEMPLATES.forEach(t => {
+      const incoming = decoded[t.id] || decoded[String(t.id)];
+      if (incoming) {
+        state[t.id] = {
+          sent: Number(incoming.sent) || 0,
+          reply: Number(incoming.reply) || 0,
+          convo: Number(incoming.convo) || 0
+        };
+        changedAny = true;
+        updateCardDisplay(t.id);
+      }
+    });
+    if (!changedAny) {
+      setStatus('Code herkend, maar geen bruikbare data gevonden.', 3000);
+      return;
+    }
+    renderSummary();
+    closeBackupPanel();
+    setStatus('Data geladen ✓', 2000);
+    // Best-effort proberen ook naar de opslag te schrijven.
+    saveState();
+  } catch (e) {
+    setStatus("Deze code kon niet worden gelezen — controleer of je 'm volledig hebt geplakt.", 3500);
+  }
+});
+
+closeBackupBtn.addEventListener('click', closeBackupPanel);
+
+(async function init() {
+  renderCards();
+  await loadState();
+  TEMPLATES.forEach(t => updateCardDisplay(t.id));
+  renderSummary();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('cards').style.display = 'flex';
+})();
+</script>
+
+</body>
+</html>
